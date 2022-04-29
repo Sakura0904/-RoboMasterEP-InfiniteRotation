@@ -1,0 +1,109 @@
+C51 COMPILER V9.55   MAIN                                                                  04/21/2022 11:27:51 PAGE 1   
+
+
+C51 COMPILER V9.55, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: F:\keil5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.l
+                    -st) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <STC15.h>
+   2          // 定义常用的语句
+   3          typedef     unsigned char   u8;
+   4          typedef     unsigned int    u16;
+   5          typedef     unsigned long   u32;
+   6          
+   7          #define S1_S0 0x40
+   8          #define S1_S1 0x80
+   9          #define FOSC 11059200L
+  10          #define BAUD 115200//波特率
+  11          unsigned char WORD;
+  12          unsigned char busy;
+  13          
+  14          void send_byte(unsigned char by);
+  15          void SendString(unsigned char *s);//发送字符串
+  16          
+  17          void UART_Init();
+  18          void delay1s();
+  19          
+  20          void main(){
+  21   1        UART_Init();
+  22   1      
+  23   1        SendString("command;");while(SBUF != 0);
+  24   1        SendString("robot mode free;");while(SBUF != 0);
+  25   1        SendString("gimbal push attitude on;");while(SBUF != 0);
+  26   1        SendString("game_msg on;");while(SBUF != 0);
+  27   1        SendString("chassis wheel w1 300 w2 -300 w3 -300 w4 300;");while(SBUF != 0);
+  28   1        //SendString("command;robot mode free;gimbal push attitude on;game_msg on;chassis wheel w1 300 w2 -300 w3
+             - -300 w4 300;");
+  29   1        
+  30   1        while (1);
+  31   1      }
+  32          
+  33          //UART中断服务程序
+  34          void Uart() interrupt 4 using 1{
+  35   1        if(RI)
+  36   1        {
+  37   2          RI=0;        //清除RI位 
+  38   2          WORD=SBUF; //得到接收的信
+  39   2          SBUF=WORD;  //将得到的字符发送回给自己
+  40   2        }
+  41   1      }
+  42           
+  43          //发送字符串
+  44          void SendString(unsigned char *p){       
+  45   1        while(*p!= '\0'){
+  46   2          send_byte(*p);
+  47   2          p++;
+  48   2        }
+  49   1        SBUF = 0;
+  50   1      }
+  51          /*发送一个字符*/
+  52          void send_byte(unsigned char by){
+  53   1      
+C51 COMPILER V9.55   MAIN                                                                  04/21/2022 11:27:51 PAGE 2   
+
+  54   1      SBUF = by;
+  55   1      while(!TI);//等待发送完毕
+  56   1      TI = 0;    
+  57   1      }
+  58          //通信串口切换
+  59          void UART_Init(){
+  60   1      
+  61   1          SCON=0x50;                   //8位可变波特率
+  62   1          T2L=(65536-(FOSC/4/BAUD)); //设置波特率重装值
+  63   1          T2H=(65536-(FOSC/4/BAUD))>>8;
+  64   1          AUXR=0x14;                   //T2为1T模式，并启动定时器2
+  65   1          AUXR|=0x01;                   //选择定时器2为串口1的波特率发生器
+  66   1          ES=1;
+  67   1          EA=1;
+  68   1          //可变的波特率偶尔会发生乱码
+  69   1      }
+  70          void delay1s() {
+  71   1        unsigned char i, j, k;
+  72   1        i = 26;
+  73   1        j = 60;
+  74   1        k = 1000;
+  75   1        do {
+  76   2          do {
+  77   3            while (--k);
+  78   3          }
+  79   2          while (--j);
+  80   2        }
+  81   1        while (--i);
+  82   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    161    ----
+   CONSTANT SIZE    =    109    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,4 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj" 
+TO ".\Objects\UART_InfiniteRotation" 
+PRINT(".\Listings\UART_InfiniteRotation.m51") RAMSIZE(256) 
